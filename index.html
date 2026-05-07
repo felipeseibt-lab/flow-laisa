@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Migração — Laisa Flow</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: rgba(0,0,0,0.09);
+    --border-strong: rgba(0,0,0,0.16);
+    --text: #1a1916;
+    --text-2: #6b6a64;
+    --text-3: #a09f98;
+    --green: #0d7a5f;
+    --green-bg: #e2f5ee;
+    --blue: #1558a8;
+    --blue-bg: #e4eef9;
+    --red: #9b3030;
+    --red-bg: #fdeaea;
+    --purple: #5c3db5;
+    --purple-bg: #eeebfc;
+    --orange: #b06010;
+    --orange-bg: #fdf0db;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg); color: var(--text);
+    min-height: 100vh; padding: 2rem 1rem 4rem;
+  }
+
+  .container { max-width: 860px; margin: 0 auto; }
+
+  /* Loading overlay */
+  #loading-overlay {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 16px; z-index: 100;
+    transition: opacity 0.3s;
+  }
+  #loading-overlay.hidden { opacity: 0; pointer-events: none; }
+  .spinner {
+    width: 32px; height: 32px;
+    border: 3px solid var(--border-strong);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 14px; color: var(--text-2); }
+
+  /* Sync status bar */
+  .sync-bar {
+    display: flex; align-items: center; justify-content: flex-end;
+    gap: 6px; margin-bottom: 1rem; min-height: 22px;
+  }
+  .sync-dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--text-3); flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .sync-dot.synced  { background: var(--green); }
+  .sync-dot.syncing { background: var(--orange); animation: pulse 1s infinite; }
+  .sync-dot.error   { background: var(--red); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .sync-label { font-size: 11px; color: var(--text-3); }
+
+  header { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+  .logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .logo-icon {
+    width: 32px; height: 32px; background: var(--text);
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  }
+  .logo-icon svg { width: 18px; height: 18px; }
+  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; }
+  .subtitle { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+
+  .summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.75rem; }
+  @media (max-width: 560px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
+
+  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .metric-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 6px; }
+  .metric-value { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; }
+  .metric-value.done { color: var(--green); }
+  .metric-value.prog { color: var(--blue); }
+  .metric-value.todo { color: var(--red); }
+
+  .overall-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 1.5rem; }
+  .overall-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .overall-row span { font-size: 13px; color: var(--text-2); }
+  .overall-row strong { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; }
+  .bar-track { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+
+  .group { margin-bottom: 1.5rem; }
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .section-tag { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; padding: 3px 9px; border-radius: 99px; }
+  .section-tag.trk { background: var(--green-bg); color: var(--green); }
+  .section-tag.tms { background: var(--blue-bg); color: var(--blue); }
+  .section-line { flex: 1; height: 1px; background: var(--border); }
+  .flows-list { display: flex; flex-direction: column; gap: 6px; }
+
+  .flow-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.15s; }
+  .flow-card:hover { border-color: var(--border-strong); }
+  .flow-row { padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+
+  .flow-num-link {
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text-3); min-width: 24px; text-align: center;
+    flex-shrink: 0; text-decoration: none;
+    width: 24px; height: 24px; border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid transparent; transition: all 0.15s; position: relative;
+  }
+  .flow-num-link:hover { background: var(--orange-bg); color: var(--orange); border-color: #e8c070; transform: scale(1.1); }
+  .flow-num-link:hover::after {
+    content: "Abrir no N8N";
+    position: absolute; left: 30px; top: 50%; transform: translateY(-50%);
+    background: #1a1916; color: #fff; font-size: 10px; font-weight: 500;
+    padding: 3px 8px; border-radius: 5px; white-space: nowrap;
+    pointer-events: none; font-family: 'DM Sans', sans-serif; z-index: 10;
+  }
+
+  .flow-name-input {
+    flex: 1; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    color: var(--text); border: none; background: transparent;
+    padding: 3px 6px; border-radius: 5px; min-width: 0; cursor: pointer; transition: background 0.12s;
+  }
+  .flow-name-input:hover { background: var(--surface2); }
+  .flow-name-input:focus { outline: 2px solid #1558a844; background: #fff; cursor: text; }
+
+  .mini-bar-wrap { width: 72px; height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; flex-shrink: 0; }
+  .mini-bar { height: 100%; border-radius: 99px; transition: width 0.3s, background 0.3s; }
+
+  input[type=range] {
+    -webkit-appearance: none; width: 72px; height: 4px;
+    border-radius: 99px; background: var(--surface2); outline: none; cursor: pointer; flex-shrink: 0;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
+    background: var(--text); cursor: pointer; border: 2px solid var(--surface);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: background 0.15s;
+  }
+  input[type=range]:hover::-webkit-slider-thumb { background: var(--blue); }
+
+  .pct-field { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
+  .pct-input {
+    width: 50px; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
+    text-align: right; border: 1px solid var(--border); border-radius: 6px;
+    padding: 4px 6px; background: var(--surface2); color: var(--text);
+    transition: border-color 0.12s; -moz-appearance: textfield;
+  }
+  .pct-input::-webkit-inner-spin-button, .pct-input::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .pct-input:focus { outline: none; border-color: var(--blue); background: #fff; }
+  .pct-sym { font-size: 13px; color: var(--text-3); font-family: 'DM Mono', monospace; }
+
+  .status-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 99px; min-width: 70px; text-align: center; flex-shrink: 0; }
+  .pill-done { background: var(--green-bg); color: var(--green); }
+  .pill-prog { background: var(--blue-bg); color: var(--blue); }
+  .pill-todo { background: #f0efe9; color: var(--text-3); }
+
+  .notes-btn {
+    display: flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 500; color: var(--text-3);
+    background: none; border: 1px solid var(--border); cursor: pointer;
+    padding: 4px 10px; border-radius: 6px;
+    transition: background 0.12s, color 0.12s, border-color 0.12s;
+    flex-shrink: 0; font-family: 'DM Sans', sans-serif;
+  }
+  .notes-btn:hover { background: var(--surface2); color: var(--text-2); border-color: var(--border-strong); }
+  .notes-btn.has-notes { color: var(--purple); border-color: #c4b8f5; background: var(--purple-bg); }
+  .notes-btn svg { width: 13px; height: 13px; transition: transform 0.2s; flex-shrink: 0; }
+  .notes-btn.open svg.chevron { transform: rotate(180deg); }
+
+  .notes-panel { display: none; border-top: 1px solid var(--border); padding: 16px 18px 18px; background: #fafaf8; }
+  .notes-panel.open { display: block; animation: slideDown 0.18s ease; }
+  @keyframes slideDown { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
+
+  .notes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+  @media (max-width: 600px) { .notes-grid { grid-template-columns: 1fr; } }
+
+  .notes-field label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 5px; }
+  .notes-field input[type=number] {
+    width: 100%; font-family: 'DM Mono', monospace; font-size: 15px;
+    padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px;
+    background: var(--surface); color: var(--text); -moz-appearance: textfield; transition: border-color 0.12s;
+  }
+  .notes-field input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
+  .notes-field input[type=number]:focus { outline: none; border-color: var(--blue); }
+
+  .notes-tags-section { margin-bottom: 14px; }
+  .notes-tags-section label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 7px; }
+  .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .tag-chip {
+    font-size: 12px; font-weight: 500; padding: 4px 11px; border-radius: 99px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
+    cursor: pointer; transition: all 0.12s; user-select: none;
+  }
+  .tag-chip:hover { border-color: var(--border-strong); color: var(--text); }
+  .tag-chip.active { background: var(--purple-bg); color: var(--purple); border-color: #c4b8f5; }
+
+  .notes-obs-section label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 5px; }
+  .notes-textarea {
+    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 13px;
+    padding: 9px 11px; border: 1px solid var(--border); border-radius: 7px;
+    background: var(--surface); color: var(--text);
+    resize: vertical; min-height: 76px; line-height: 1.6; transition: border-color 0.12s;
+  }
+  .notes-textarea:focus { outline: none; border-color: var(--blue); }
+  .notes-textarea::placeholder { color: var(--text-3); }
+
+  .notes-bottom { display: flex; align-items: center; justify-content: flex-end; margin-top: 10px; height: 18px; }
+  .notes-saved-hint { font-size: 11px; color: var(--green); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; gap: 4px; }
+  .notes-saved-hint.show { opacity: 1; }
+
+  footer { margin-top: 2rem; font-size: 12px; color: var(--text-3); text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  footer svg { width: 14px; height: 14px; opacity: 0.5; }
+</style>
+</head>
+<body>
+
+<div id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text">Carregando dados do Supabase…</div>
+</div>
+
+<div class="container">
+
+  <div class="sync-bar">
+    <div class="sync-dot" id="sync-dot"></div>
+    <span class="sync-label" id="sync-label">Conectando…</span>
+  </div>
+
+  <header>
+    <div class="logo-row">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 3v12"/><circle cx="18" cy="6" r="3"/><circle cx="6" cy="18" r="3"/>
+          <path d="M18 9a9 9 0 0 1-9 9"/>
+        </svg>
+      </div>
+      <h1>Migração · Laisa Flow</h1>
+    </div>
+    <p class="subtitle">Clique no <strong style="font-weight:500">número</strong> para abrir no N8N · <strong style="font-weight:500">✎ Notas</strong> para registrar MCPs e mudanças · sincronizado em tempo real</p>
+  </header>
+
+  <div class="summary-grid">
+    <div class="metric"><div class="metric-label">Total</div><div class="metric-value" id="m-total">15</div></div>
+    <div class="metric"><div class="metric-label">Concluídos</div><div class="metric-value done" id="m-done">0</div></div>
+    <div class="metric"><div class="metric-label">Em progresso</div><div class="metric-value prog" id="m-prog">0</div></div>
+    <div class="metric"><div class="metric-label">Não iniciados</div><div class="metric-value todo" id="m-todo">15</div></div>
+  </div>
+
+  <div class="overall-wrap">
+    <div class="overall-row">
+      <span>Progresso geral da migração</span>
+      <strong id="overall-pct">0%</strong>
+    </div>
+    <div class="bar-track">
+      <div class="bar-fill" id="overall-bar" style="width:0%"></div>
+    </div>
+  </div>
+
+  <div id="groups-container"></div>
+
+  <footer>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Sincronizado com Supabase · qualquer alteração aparece para todos
+  </footer>
+
+</div>
+
+<script>
+// ── Supabase config ──
+const SUPABASE_URL = 'https://ynxcuxkwfwcsgtltaixo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlueGN1eGt3Zndjc2d0bHRhaXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjc0OTEsImV4cCI6MjA5Mzc0MzQ5MX0.ZJkwP8v96sfuJc0dQBVGLC3hzM5T96W4Goav2tOggU4';
+const TABLE = 'flows';
+
+// ── Dados base dos fluxos (nomes e links fixos) ──
+const FLOWS_BASE = [
+  {tag:"TRK", name:"Análise de rota - Fim de Rota",                          url:"https://n8n-laisa.lincros.com/workflow/sQqdrbp8HGAKYUul"},
+  {tag:"TRK", name:"Analise de Temperatura V2",                               url:"https://n8n-laisa.lincros.com/workflow/gGhIFfNuBX9oPON0"},
+  {tag:"TRK", name:"Analise de Rota - Inicio de Rota",                        url:"https://n8n-laisa.lincros.com/workflow/9ozxHM5OrOq7aTry"},
+  {tag:"TRK", name:"Analise de Sequência de Rota - HOM",                      url:"https://n8n-laisa.lincros.com/workflow/K9N5FIHhqETvX7a9"},
+  {tag:"TRK", name:"FORTLEV - Entrega agendada não realizada",                url:"https://n8n-laisa.lincros.com/workflow/RAttaU1mKJeowq1N"},
+  {tag:"TRK", name:"Entrega atrasada - HOM",                                  url:"https://n8n-laisa.lincros.com/workflow/oP8kbBMpstZ48Ta7"},
+  {tag:"TMS", name:"Processador de canhotos",                                 url:"https://n8n-laisa.lincros.com/workflow/dc9g1bMgJEvS5dnm"},
+  {tag:"TMS", name:"Rastreio cliente",                                        url:"https://n8n-laisa.lincros.com/workflow/gDAcbtf8XRnUHDMT"},
+  {tag:"TMS", name:"Transportador&Motorista AG3.0 - Notas em atraso",         url:"https://n8n-laisa.lincros.com/workflow/rPK5op1nrVKWyoAH"},
+  {tag:"TMS", name:"Transportador&Motorista AG7.0 - Entregas do dia",         url:"https://n8n-laisa.lincros.com/workflow/9I6LiP5kPB9hdqto"},
+  {tag:"TMS", name:"Representante/Vendedor AG1.0",                            url:"https://n8n-laisa.lincros.com/workflow/e8rPF6Rw0OMB8xDs"},
+  {tag:"TMS", name:"Transportador&Motorista AG5.2 - Processamento arquivos",  url:"https://n8n-laisa.lincros.com/workflow/I1ES7EpP2uN8B2N2"},
+  {tag:"TMS", name:"Transportador&Motorista AG5.0 - Followup email",          url:"https://n8n-laisa.lincros.com/workflow/Y0XPNeNjf1feWAK6"},
+  {tag:"TMS", name:"Transportador&Motorista AG4.0 - Canhoto",                 url:"https://n8n-laisa.lincros.com/workflow/s7y7XN9ERFQ0oIeY"},
+  {tag:"TMS", name:"Transportador&Motorista AG6.0 - Notas sem coleta",        url:"https://n8n-laisa.lincros.com/workflow/l2nYQpTWlDhNKmw6"},
+];
+
+const CHANGE_TAGS = ["Novo MCP","MCP existente","Webhook novo","Lógica alterada","Integração nova","Sem mudanças"];
+
+let data = FLOWS_BASE.map((f,i) => ({
+  ...f, flow_index: i, pct: 0,
+  notes: { mcps_new: '', mcps_existing: '', changes: '', tags: [] }
+}));
+
+// ── Sync status ──
+function setSyncStatus(state, text) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = text;
+}
+
+// ── Supabase helpers ──
+async function sbFetch(path, options = {}) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    ...options,
+    headers: {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': options.prefer || '',
+      ...options.headers
+    }
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function loadFromSupabase() {
+  const rows = await sbFetch(`${TABLE}?order=flow_index.asc`);
+  if (!rows || rows.length === 0) {
+    // Tabela vazia — popula com os dados padrão
+    await seedSupabase();
+  } else {
+    rows.forEach(row => {
+      const i = row.flow_index;
+      if (i >= 0 && i < data.length) {
+        data[i].pct = row.pct || 0;
+        data[i].name = row.name || data[i].name;
+        data[i].notes = {
+          mcps_new:      row.mcps_new      || '',
+          mcps_existing: row.mcps_existing || '',
+          changes:       row.changes       || '',
+          tags:          row.tags ? JSON.parse(row.tags) : []
+        };
+      }
+    });
+  }
+}
+
+async function seedSupabase() {
+  const rows = data.map((f, i) => ({
+    flow_index:    i,
+    tag:           f.tag,
+    name:          f.name,
+    pct:           0,
+    mcps_new:      '',
+    mcps_existing: '',
+    changes:       '',
+    tags:          '[]'
+  }));
+  await sbFetch(TABLE, {
+    method: 'POST',
+    prefer: 'return=minimal',
+    body: JSON.stringify(rows)
+  });
+}
+
+// Debounce para não disparar uma chamada por tecla
+const saveTimers = {};
+async function saveFlow(i) {
+  clearTimeout(saveTimers[i]);
+  saveTimers[i] = setTimeout(async () => {
+    setSyncStatus('syncing', 'Salvando…');
+    try {
+      const f = data[i];
+      await sbFetch(`${TABLE}?flow_index=eq.${i}`, {
+        method: 'PATCH',
+        prefer: 'return=minimal',
+        body: JSON.stringify({
+          name:          f.name,
+          pct:           f.pct,
+          mcps_new:      f.notes.mcps_new,
+          mcps_existing: f.notes.mcps_existing,
+          changes:       f.notes.changes,
+          tags:          JSON.stringify(f.notes.tags)
+        })
+      });
+      setSyncStatus('synced', 'Salvo · ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
+      showSaved(i);
+    } catch(e) {
+      setSyncStatus('error', 'Erro ao salvar');
+      console.error(e);
+    }
+  }, 600);
+}
+
+// ── UI helpers ──
+function barColor(p) {
+  if (p===100) return '#0d7a5f';
+  if (p>=50)   return '#1558a8';
+  if (p>0)     return '#b07010';
+  return '#d4d2cb';
+}
+function pillHTML(p) {
+  if (p===100) return `<span class="status-pill pill-done">Concluído</span>`;
+  if (p>0)     return `<span class="status-pill pill-prog">Em progresso</span>`;
+  return `<span class="status-pill pill-todo">Não iniciado</span>`;
+}
+function hasNotes(f) {
+  return !!(f.notes.mcps_new || f.notes.mcps_existing || f.notes.changes || f.notes.tags.length);
+}
+function notesLabel(i) {
+  const f = data[i];
+  const c = (f.notes.mcps_new?1:0)+(f.notes.mcps_existing?1:0)+(f.notes.changes?1:0)+f.notes.tags.length;
+  return c > 0
+    ? `✎ Notas <span style="background:var(--purple-bg);color:var(--purple);font-size:10px;padding:1px 6px;border-radius:99px;margin-left:2px">${c}</span>`
+    : `✎ Notas`;
+}
+function showSaved(i) {
+  const el = document.getElementById(`saved-${i}`);
+  if (!el) return;
+  el.classList.add('show');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 1500);
+}
+function updateSummary() {
+  const avg = data.reduce((a,f) => a+f.pct, 0) / data.length;
+  document.getElementById('overall-pct').textContent = Math.round(avg)+'%';
+  document.getElementById('overall-bar').style.width = Math.round(avg)+'%';
+  document.getElementById('m-done').textContent = data.filter(f=>f.pct===100).length;
+  document.getElementById('m-prog').textContent = data.filter(f=>f.pct>0&&f.pct<100).length;
+  document.getElementById('m-todo').textContent = data.filter(f=>f.pct===0).length;
+}
+
+// ── Render ──
+function render() {
+  const container = document.getElementById('groups-container');
+  container.innerHTML = '';
+  const groups = [...new Set(data.map(f=>f.tag))];
+
+  groups.forEach(tag => {
+    const groupFlows = data.map((f,i)=>({...f,idx:i})).filter(f=>f.tag===tag);
+    const group = document.createElement('div');
+    group.className = 'group';
+    group.innerHTML = `
+      <div class="section-header">
+        <span class="section-tag ${tag.toLowerCase()}">${tag}</span>
+        <div class="section-line"></div>
+      </div>
+      <div class="flows-list" id="group-${tag}"></div>
+    `;
+    container.appendChild(group);
+    const list = document.getElementById(`group-${tag}`);
+
+    groupFlows.forEach(f => {
+      const i = f.idx;
+      const n = f.notes;
+      const tagsHTML = CHANGE_TAGS.map(t =>
+        `<span class="tag-chip${n.tags.includes(t)?' active':''}" data-i="${i}" data-tag="${t}">${t}</span>`
+      ).join('');
+
+      const card = document.createElement('div');
+      card.className = 'flow-card';
+      card.innerHTML = `
+        <div class="flow-row">
+          <a class="flow-num-link" href="${f.url}" target="_blank" title="Abrir no N8N">${i+1}</a>
+          <input class="flow-name-input" type="text" value="${f.name.replace(/"/g,'&quot;')}" data-i="${i}" />
+          <input type="range" min="0" max="100" step="5" value="${f.pct}" data-i="${i}" class="range-input" />
+          <div class="mini-bar-wrap">
+            <div class="mini-bar" id="mbar-${i}" style="width:${f.pct}%;background:${barColor(f.pct)}"></div>
+          </div>
+          <div class="pct-field">
+            <input class="pct-input" type="number" min="0" max="100" step="1" value="${f.pct}" data-i="${i}" />
+            <span class="pct-sym">%</span>
+          </div>
+          <div id="pill-${i}">${pillHTML(f.pct)}</div>
+          <button class="notes-btn${hasNotes(f)?' has-notes':''}" id="nbtn-${i}" data-i="${i}">
+            <span id="nlabel-${i}">${notesLabel(i)}</span>
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+        </div>
+        <div class="notes-panel${hasNotes(f)?' open':''}" id="npanel-${i}">
+          <div class="notes-grid">
+            <div class="notes-field">
+              <label>MCPs novos criados</label>
+              <input type="number" min="0" placeholder="0" value="${n.mcps_new}" data-i="${i}" data-field="mcps_new" class="notes-num" />
+            </div>
+            <div class="notes-field">
+              <label>MCPs existentes reutilizados</label>
+              <input type="number" min="0" placeholder="0" value="${n.mcps_existing}" data-i="${i}" data-field="mcps_existing" class="notes-num" />
+            </div>
+          </div>
+          <div class="notes-tags-section">
+            <label>Tipo de mudança</label>
+            <div class="tags-row">${tagsHTML}</div>
+          </div>
+          <div class="notes-obs-section">
+            <label>Observações / o que mudou</label>
+            <textarea class="notes-textarea" data-i="${i}" placeholder="Descreva o que foi alterado, dependências, pendências...">${n.changes}</textarea>
+          </div>
+          <div class="notes-bottom">
+            <span class="notes-saved-hint" id="saved-${i}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+              Salvo
+            </span>
+          </div>
+        </div>
+      `;
+      list.appendChild(card);
+      if (hasNotes(f)) document.getElementById(`nbtn-${i}`).classList.add('open');
+    });
+  });
+
+  // Events
+  document.querySelectorAll('.flow-name-input').forEach(inp => {
+    inp.addEventListener('change', e => {
+      const i = +e.target.dataset.i;
+      data[i].name = e.target.value;
+      saveFlow(i);
+    });
+  });
+
+  function updateFlow(i, v) {
+    v = Math.max(0, Math.min(100, v));
+    data[i].pct = v;
+    document.getElementById(`mbar-${i}`).style.width = v+'%';
+    document.getElementById(`mbar-${i}`).style.background = barColor(v);
+    document.getElementById(`pill-${i}`).innerHTML = pillHTML(v);
+    const pi = document.querySelector(`.pct-input[data-i="${i}"]`);
+    const ri = document.querySelector(`.range-input[data-i="${i}"]`);
+    if (pi && +pi.value!==v) pi.value = v;
+    if (ri && +ri.value!==v) ri.value = v;
+    updateSummary();
+    saveFlow(i);
+  }
+
+  document.querySelectorAll('.pct-input').forEach(inp => {
+    inp.addEventListener('input', e => updateFlow(+e.target.dataset.i, parseInt(e.target.value)||0));
+  });
+  document.querySelectorAll('.range-input').forEach(inp => {
+    inp.addEventListener('input', e => updateFlow(+e.target.dataset.i, parseInt(e.target.value)));
+  });
+
+  document.querySelectorAll('.notes-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.i;
+      const panel = document.getElementById(`npanel-${i}`);
+      const open = panel.classList.toggle('open');
+      btn.classList.toggle('open', open);
+    });
+  });
+
+  document.querySelectorAll('.notes-num').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const i = +e.target.dataset.i;
+      data[i].notes[e.target.dataset.field] = e.target.value;
+      refreshNotesBtn(i); saveFlow(i);
+    });
+  });
+
+  document.querySelectorAll('.notes-textarea').forEach(ta => {
+    ta.addEventListener('input', e => {
+      const i = +e.target.dataset.i;
+      data[i].notes.changes = e.target.value;
+      refreshNotesBtn(i); saveFlow(i);
+    });
+  });
+
+  document.querySelectorAll('.tag-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const i = +chip.dataset.i;
+      const t = chip.dataset.tag;
+      const tags = data[i].notes.tags;
+      const idx = tags.indexOf(t);
+      if (idx>-1) tags.splice(idx,1); else tags.push(t);
+      chip.classList.toggle('active', tags.includes(t));
+      refreshNotesBtn(i); saveFlow(i);
+    });
+  });
+
+  updateSummary();
+}
+
+function refreshNotesBtn(i) {
+  const btn = document.getElementById(`nbtn-${i}`);
+  const lbl = document.getElementById(`nlabel-${i}`);
+  if (!btn||!lbl) return;
+  btn.classList.toggle('has-notes', hasNotes(data[i]));
+  lbl.innerHTML = notesLabel(i);
+}
+
+// ── Boot ──
+(async () => {
+  try {
+    setSyncStatus('syncing', 'Carregando…');
+    await loadFromSupabase();
+    setSyncStatus('synced', 'Sincronizado');
+  } catch(e) {
+    setSyncStatus('error', 'Erro de conexão — verifique o Supabase');
+    console.error(e);
+  }
+  render();
+  document.getElementById('loading-overlay').classList.add('hidden');
+})();
+</script>
+</body>
+</html>
