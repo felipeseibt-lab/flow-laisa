@@ -37,14 +37,11 @@
 
   .container { max-width: 860px; margin: 0 auto; }
 
-  /* Loading overlay */
   #loading-overlay {
-    position: fixed; inset: 0;
-    background: var(--bg);
+    position: fixed; inset: 0; background: var(--bg);
     display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    gap: 16px; z-index: 100;
-    transition: opacity 0.3s;
+    gap: 16px; z-index: 100; transition: opacity 0.3s;
   }
   #loading-overlay.hidden { opacity: 0; pointer-events: none; }
   .spinner {
@@ -57,15 +54,13 @@
   @keyframes spin { to { transform: rotate(360deg); } }
   .loading-text { font-size: 14px; color: var(--text-2); }
 
-  /* Sync status bar */
   .sync-bar {
     display: flex; align-items: center; justify-content: flex-end;
     gap: 6px; margin-bottom: 1rem; min-height: 22px;
   }
   .sync-dot {
     width: 7px; height: 7px; border-radius: 50%;
-    background: var(--text-3); flex-shrink: 0;
-    transition: background 0.3s;
+    background: var(--text-3); flex-shrink: 0; transition: background 0.3s;
   }
   .sync-dot.synced  { background: var(--green); }
   .sync-dot.syncing { background: var(--orange); animation: pulse 1s infinite; }
@@ -114,20 +109,23 @@
 
   .flow-num-link {
     font-family: 'DM Mono', monospace; font-size: 11px;
-    color: var(--text-3); min-width: 24px; text-align: center;
-    flex-shrink: 0; text-decoration: none;
-    width: 24px; height: 24px; border-radius: 6px;
+    color: var(--text-3); min-width: 24px; text-align: center; flex-shrink: 0;
+    text-decoration: none; width: 24px; height: 24px; border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
     border: 1px solid transparent; transition: all 0.15s; position: relative;
   }
-  .flow-num-link:hover { background: var(--orange-bg); color: var(--orange); border-color: #e8c070; transform: scale(1.1); }
-  .flow-num-link:hover::after {
+  .flow-num-link[href]:hover {
+    background: var(--orange-bg); color: var(--orange);
+    border-color: #e8c070; transform: scale(1.1);
+  }
+  .flow-num-link[href]:hover::after {
     content: "Abrir no N8N";
     position: absolute; left: 30px; top: 50%; transform: translateY(-50%);
     background: #1a1916; color: #fff; font-size: 10px; font-weight: 500;
     padding: 3px 8px; border-radius: 5px; white-space: nowrap;
     pointer-events: none; font-family: 'DM Sans', sans-serif; z-index: 10;
   }
+  .flow-num-link:not([href]) { cursor: default; }
 
   .flow-name-input {
     flex: 1; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
@@ -254,16 +252,16 @@
   </header>
 
   <div class="summary-grid">
-    <div class="metric"><div class="metric-label">Total</div><div class="metric-value" id="m-total">15</div></div>
-    <div class="metric"><div class="metric-label">Concluídos</div><div class="metric-value done" id="m-done">0</div></div>
-    <div class="metric"><div class="metric-label">Em progresso</div><div class="metric-value prog" id="m-prog">0</div></div>
-    <div class="metric"><div class="metric-label">Não iniciados</div><div class="metric-value todo" id="m-todo">15</div></div>
+    <div class="metric"><div class="metric-label">Total</div><div class="metric-value" id="m-total">—</div></div>
+    <div class="metric"><div class="metric-label">Concluídos</div><div class="metric-value done" id="m-done">—</div></div>
+    <div class="metric"><div class="metric-label">Em progresso</div><div class="metric-value prog" id="m-prog">—</div></div>
+    <div class="metric"><div class="metric-label">Não iniciados</div><div class="metric-value todo" id="m-todo">—</div></div>
   </div>
 
   <div class="overall-wrap">
     <div class="overall-row">
       <span>Progresso geral da migração</span>
-      <strong id="overall-pct">0%</strong>
+      <strong id="overall-pct">—</strong>
     </div>
     <div class="bar-track">
       <div class="bar-fill" id="overall-bar" style="width:0%"></div>
@@ -274,52 +272,24 @@
 
   <footer>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-    Sincronizado com Supabase · qualquer alteração aparece para todos
+    Sincronizado com Supabase · qualquer alteração aparece para todos · adicione novos flows direto na tabela
   </footer>
 
 </div>
 
 <script>
-// ── Supabase config ──
 const SUPABASE_URL = 'https://ynxcuxkwfwcsgtltaixo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlueGN1eGt3Zndjc2d0bHRhaXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjc0OTEsImV4cCI6MjA5Mzc0MzQ5MX0.ZJkwP8v96sfuJc0dQBVGLC3hzM5T96W4Goav2tOggU4';
 const TABLE = 'flows';
-
-// ── Dados base dos fluxos (nomes e links fixos) ──
-const FLOWS_BASE = [
-  {tag:"TRK", name:"Análise de rota - Fim de Rota",                          url:"https://n8n-laisa.lincros.com/workflow/sQqdrbp8HGAKYUul"},
-  {tag:"TRK", name:"Analise de Temperatura V2",                               url:"https://n8n-laisa.lincros.com/workflow/gGhIFfNuBX9oPON0"},
-  {tag:"TRK", name:"Analise de Rota - Inicio de Rota",                        url:"https://n8n-laisa.lincros.com/workflow/9ozxHM5OrOq7aTry"},
-  {tag:"TRK", name:"Analise de Sequência de Rota - HOM",                      url:"https://n8n-laisa.lincros.com/workflow/K9N5FIHhqETvX7a9"},
-  {tag:"TRK", name:"FORTLEV - Entrega agendada não realizada",                url:"https://n8n-laisa.lincros.com/workflow/RAttaU1mKJeowq1N"},
-  {tag:"TRK", name:"Entrega atrasada - HOM",                                  url:"https://n8n-laisa.lincros.com/workflow/oP8kbBMpstZ48Ta7"},
-  {tag:"TMS", name:"Processador de canhotos",                                 url:"https://n8n-laisa.lincros.com/workflow/dc9g1bMgJEvS5dnm"},
-  {tag:"TMS", name:"Rastreio cliente",                                        url:"https://n8n-laisa.lincros.com/workflow/gDAcbtf8XRnUHDMT"},
-  {tag:"TMS", name:"Transportador&Motorista AG3.0 - Notas em atraso",         url:"https://n8n-laisa.lincros.com/workflow/rPK5op1nrVKWyoAH"},
-  {tag:"TMS", name:"Transportador&Motorista AG7.0 - Entregas do dia",         url:"https://n8n-laisa.lincros.com/workflow/9I6LiP5kPB9hdqto"},
-  {tag:"TMS", name:"Representante/Vendedor AG1.0",                            url:"https://n8n-laisa.lincros.com/workflow/e8rPF6Rw0OMB8xDs"},
-  {tag:"TMS", name:"Transportador&Motorista AG5.2 - Processamento arquivos",  url:"https://n8n-laisa.lincros.com/workflow/I1ES7EpP2uN8B2N2"},
-  {tag:"TMS", name:"Transportador&Motorista AG5.0 - Followup email",          url:"https://n8n-laisa.lincros.com/workflow/Y0XPNeNjf1feWAK6"},
-  {tag:"TMS", name:"Transportador&Motorista AG4.0 - Canhoto",                 url:"https://n8n-laisa.lincros.com/workflow/s7y7XN9ERFQ0oIeY"},
-  {tag:"TMS", name:"Transportador&Motorista AG6.0 - Notas sem coleta",        url:"https://n8n-laisa.lincros.com/workflow/l2nYQpTWlDhNKmw6"},
-];
-
 const CHANGE_TAGS = ["Novo MCP","MCP existente","Webhook novo","Lógica alterada","Integração nova","Sem mudanças"];
 
-let data = FLOWS_BASE.map((f,i) => ({
-  ...f, flow_index: i, pct: 0,
-  notes: { mcps_new: '', mcps_existing: '', changes: '', tags: [] }
-}));
+let data = [];
 
-// ── Sync status ──
 function setSyncStatus(state, text) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-label');
-  dot.className = 'sync-dot ' + state;
-  lbl.textContent = text;
+  document.getElementById('sync-dot').className = 'sync-dot ' + state;
+  document.getElementById('sync-label').textContent = text;
 }
 
-// ── Supabase helpers ──
 async function sbFetch(path, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...options,
@@ -331,55 +301,30 @@ async function sbFetch(path, options = {}) {
       ...options.headers
     }
   });
-  if (!res.ok) {
-    const err = await res.text();
-    throw new Error(err);
-  }
+  if (!res.ok) { const e = await res.text(); throw new Error(e); }
   const text = await res.text();
   return text ? JSON.parse(text) : null;
 }
 
 async function loadFromSupabase() {
   const rows = await sbFetch(`${TABLE}?order=flow_index.asc`);
-  if (!rows || rows.length === 0) {
-    // Tabela vazia — popula com os dados padrão
-    await seedSupabase();
-  } else {
-    rows.forEach(row => {
-      const i = row.flow_index;
-      if (i >= 0 && i < data.length) {
-        data[i].pct = row.pct || 0;
-        data[i].name = row.name || data[i].name;
-        data[i].notes = {
-          mcps_new:      row.mcps_new      || '',
-          mcps_existing: row.mcps_existing || '',
-          changes:       row.changes       || '',
-          tags:          row.tags ? JSON.parse(row.tags) : []
-        };
-      }
-    });
-  }
-}
-
-async function seedSupabase() {
-  const rows = data.map((f, i) => ({
-    flow_index:    i,
-    tag:           f.tag,
-    name:          f.name,
-    pct:           0,
-    mcps_new:      '',
-    mcps_existing: '',
-    changes:       '',
-    tags:          '[]'
+  if (!rows || rows.length === 0) throw new Error('Tabela vazia');
+  data = rows.map(row => ({
+    id:            row.id,
+    flow_index:    row.flow_index,
+    tag:           row.tag || 'TMS',
+    name:          row.name || '',
+    url:           row.url  || '',
+    pct:           row.pct  || 0,
+    notes: {
+      mcps_new:      row.mcps_new      || '',
+      mcps_existing: row.mcps_existing || '',
+      changes:       row.changes       || '',
+      tags:          row.tags ? (typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags) : []
+    }
   }));
-  await sbFetch(TABLE, {
-    method: 'POST',
-    prefer: 'return=minimal',
-    body: JSON.stringify(rows)
-  });
 }
 
-// Debounce para não disparar uma chamada por tecla
 const saveTimers = {};
 async function saveFlow(i) {
   clearTimeout(saveTimers[i]);
@@ -387,12 +332,13 @@ async function saveFlow(i) {
     setSyncStatus('syncing', 'Salvando…');
     try {
       const f = data[i];
-      await sbFetch(`${TABLE}?flow_index=eq.${i}`, {
+      await sbFetch(`${TABLE}?flow_index=eq.${f.flow_index}`, {
         method: 'PATCH',
         prefer: 'return=minimal',
         body: JSON.stringify({
           name:          f.name,
           pct:           f.pct,
+          url:           f.url,
           mcps_new:      f.notes.mcps_new,
           mcps_existing: f.notes.mcps_existing,
           changes:       f.notes.changes,
@@ -408,7 +354,6 @@ async function saveFlow(i) {
   }, 600);
 }
 
-// ── UI helpers ──
 function barColor(p) {
   if (p===100) return '#0d7a5f';
   if (p>=50)   return '#1558a8';
@@ -438,15 +383,16 @@ function showSaved(i) {
   el._t = setTimeout(() => el.classList.remove('show'), 1500);
 }
 function updateSummary() {
-  const avg = data.reduce((a,f) => a+f.pct, 0) / data.length;
+  const total = data.length;
+  const avg   = total ? data.reduce((a,f) => a+f.pct, 0) / total : 0;
   document.getElementById('overall-pct').textContent = Math.round(avg)+'%';
   document.getElementById('overall-bar').style.width = Math.round(avg)+'%';
-  document.getElementById('m-done').textContent = data.filter(f=>f.pct===100).length;
-  document.getElementById('m-prog').textContent = data.filter(f=>f.pct>0&&f.pct<100).length;
-  document.getElementById('m-todo').textContent = data.filter(f=>f.pct===0).length;
+  document.getElementById('m-total').textContent = total;
+  document.getElementById('m-done').textContent  = data.filter(f=>f.pct===100).length;
+  document.getElementById('m-prog').textContent  = data.filter(f=>f.pct>0&&f.pct<100).length;
+  document.getElementById('m-todo').textContent  = data.filter(f=>f.pct===0).length;
 }
 
-// ── Render ──
 function render() {
   const container = document.getElementById('groups-container');
   container.innerHTML = '';
@@ -467,8 +413,12 @@ function render() {
     const list = document.getElementById(`group-${tag}`);
 
     groupFlows.forEach(f => {
-      const i = f.idx;
-      const n = f.notes;
+      const i  = f.idx;
+      const n  = f.notes;
+      const numEl = f.url
+        ? `<a class="flow-num-link" href="${f.url}" target="_blank" title="Abrir no N8N">${f.flow_index+1}</a>`
+        : `<span class="flow-num-link">${f.flow_index+1}</span>`;
+
       const tagsHTML = CHANGE_TAGS.map(t =>
         `<span class="tag-chip${n.tags.includes(t)?' active':''}" data-i="${i}" data-tag="${t}">${t}</span>`
       ).join('');
@@ -477,7 +427,7 @@ function render() {
       card.className = 'flow-card';
       card.innerHTML = `
         <div class="flow-row">
-          <a class="flow-num-link" href="${f.url}" target="_blank" title="Abrir no N8N">${i+1}</a>
+          ${numEl}
           <input class="flow-name-input" type="text" value="${f.name.replace(/"/g,'&quot;')}" data-i="${i}" />
           <input type="range" min="0" max="100" step="5" value="${f.pct}" data-i="${i}" class="range-input" />
           <div class="mini-bar-wrap">
@@ -493,7 +443,7 @@ function render() {
             <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
           </button>
         </div>
-        <div class="notes-panel${hasNotes(f)?' open':''}" id="npanel-${i}">
+        <div class="notes-panel" id="npanel-${i}">
           <div class="notes-grid">
             <div class="notes-field">
               <label>MCPs novos criados</label>
@@ -521,11 +471,10 @@ function render() {
         </div>
       `;
       list.appendChild(card);
-      if (hasNotes(f)) document.getElementById(`nbtn-${i}`).classList.add('open');
+
     });
   });
 
-  // Events
   document.querySelectorAll('.flow-name-input').forEach(inp => {
     inp.addEventListener('change', e => {
       const i = +e.target.dataset.i;
@@ -544,8 +493,7 @@ function render() {
     const ri = document.querySelector(`.range-input[data-i="${i}"]`);
     if (pi && +pi.value!==v) pi.value = v;
     if (ri && +ri.value!==v) ri.value = v;
-    updateSummary();
-    saveFlow(i);
+    updateSummary(); saveFlow(i);
   }
 
   document.querySelectorAll('.pct-input').forEach(inp => {
@@ -603,14 +551,13 @@ function refreshNotesBtn(i) {
   lbl.innerHTML = notesLabel(i);
 }
 
-// ── Boot ──
 (async () => {
   try {
     setSyncStatus('syncing', 'Carregando…');
     await loadFromSupabase();
     setSyncStatus('synced', 'Sincronizado');
   } catch(e) {
-    setSyncStatus('error', 'Erro de conexão — verifique o Supabase');
+    setSyncStatus('error', 'Erro de conexão');
     console.error(e);
   }
   render();
