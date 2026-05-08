@@ -7,222 +7,210 @@
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --bg: #f5f4f0;
-    --surface: #ffffff;
-    --surface2: #f0efe9;
-    --border: rgba(0,0,0,0.09);
-    --border-strong: rgba(0,0,0,0.16);
-    --text: #1a1916;
-    --text-2: #6b6a64;
-    --text-3: #a09f98;
-    --green: #0d7a5f;
-    --green-bg: #e2f5ee;
-    --blue: #1558a8;
-    --blue-bg: #e4eef9;
-    --red: #9b3030;
-    --red-bg: #fdeaea;
-    --purple: #5c3db5;
-    --purple-bg: #eeebfc;
-    --orange: #b06010;
-    --orange-bg: #fdf0db;
+    --bg:#f5f4f0; --surface:#fff; --surface2:#f0efe9;
+    --border:rgba(0,0,0,0.09); --border-strong:rgba(0,0,0,0.16);
+    --text:#1a1916; --text-2:#6b6a64; --text-3:#a09f98;
+    --green:#0d7a5f; --green-bg:#e2f5ee;
+    --blue:#1558a8; --blue-bg:#e4eef9;
+    --red:#9b3030; --red-bg:#fdeaea;
+    --purple:#5c3db5; --purple-bg:#eeebfc;
+    --orange:#b06010; --orange-bg:#fdf0db;
   }
-
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg); color: var(--text);
-    min-height: 100vh; padding: 2rem 1rem 4rem;
-  }
-
-  .container { max-width: 860px; margin: 0 auto; }
+  body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding:2rem 1rem 4rem; }
+  .container { max-width:860px; margin:0 auto; }
 
   #loading-overlay {
-    position: fixed; inset: 0; background: var(--bg);
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    gap: 16px; z-index: 100; transition: opacity 0.3s;
+    position:fixed; inset:0; background:var(--bg);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; z-index:100; transition:opacity 0.3s;
   }
-  #loading-overlay.hidden { opacity: 0; pointer-events: none; }
-  .spinner {
-    width: 32px; height: 32px;
-    border: 3px solid var(--border-strong);
-    border-top-color: var(--blue);
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 14px; color: var(--text-2); }
+  #loading-overlay.hidden { opacity:0; pointer-events:none; }
+  .spinner { width:32px; height:32px; border:3px solid var(--border-strong); border-top-color:var(--blue); border-radius:50%; animation:spin 0.7s linear infinite; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+  .loading-text { font-size:14px; color:var(--text-2); }
 
-  .sync-bar {
-    display: flex; align-items: center; justify-content: flex-end;
-    gap: 6px; margin-bottom: 1rem; min-height: 22px;
-  }
-  .sync-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--text-3); flex-shrink: 0; transition: background 0.3s;
-  }
-  .sync-dot.synced  { background: var(--green); }
-  .sync-dot.syncing { background: var(--orange); animation: pulse 1s infinite; }
-  .sync-dot.error   { background: var(--red); }
+  .sync-bar { display:flex; align-items:center; justify-content:flex-end; gap:6px; margin-bottom:1rem; min-height:22px; }
+  .sync-dot { width:7px; height:7px; border-radius:50%; background:var(--text-3); flex-shrink:0; transition:background 0.3s; }
+  .sync-dot.synced { background:var(--green); }
+  .sync-dot.syncing { background:var(--orange); animation:pulse 1s infinite; }
+  .sync-dot.error { background:var(--red); }
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-  .sync-label { font-size: 11px; color: var(--text-3); }
+  .sync-label { font-size:11px; color:var(--text-3); }
 
-  header { margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
-  .logo-row { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-  .logo-icon {
-    width: 32px; height: 32px; background: var(--text);
-    border-radius: 8px; display: flex; align-items: center; justify-content: center;
-  }
-  .logo-icon svg { width: 18px; height: 18px; }
-  h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.4px; }
-  .subtitle { font-size: 13px; color: var(--text-2); margin-top: 2px; }
+  header { margin-bottom:1.5rem; padding-bottom:1.5rem; border-bottom:1px solid var(--border); }
+  .logo-row { display:flex; align-items:center; gap:10px; margin-bottom:6px; }
+  .logo-icon { width:32px; height:32px; background:var(--text); border-radius:8px; display:flex; align-items:center; justify-content:center; }
+  .logo-icon svg { width:18px; height:18px; }
+  h1 { font-size:22px; font-weight:600; letter-spacing:-0.4px; }
+  .subtitle { font-size:13px; color:var(--text-2); margin-top:2px; }
 
-  .summary-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; margin-bottom: 1.75rem; }
-  @media (max-width: 560px) { .summary-grid { grid-template-columns: repeat(2,1fr); } }
+  .summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-bottom:1.75rem; }
+  @media (max-width:560px) { .summary-grid { grid-template-columns:repeat(2,1fr); } }
+  .metric { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  .metric-label { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:6px; }
+  .metric-value { font-family:'DM Mono',monospace; font-size:26px; font-weight:500; }
+  .metric-value.done { color:var(--green); }
+  .metric-value.prog { color:var(--blue); }
+  .metric-value.todo { color:var(--red); }
 
-  .metric { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
-  .metric-label { font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 6px; }
-  .metric-value { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; }
-  .metric-value.done { color: var(--green); }
-  .metric-value.prog { color: var(--blue); }
-  .metric-value.todo { color: var(--red); }
+  .overall-wrap { background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:16px 20px; margin-bottom:1.5rem; }
+  .overall-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .overall-row span { font-size:13px; color:var(--text-2); }
+  .overall-row strong { font-family:'DM Mono',monospace; font-size:20px; font-weight:500; }
+  .bar-track { height:8px; background:var(--surface2); border-radius:99px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:99px; background:var(--green); transition:width 0.4s cubic-bezier(.4,0,.2,1); }
 
-  .overall-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 20px; margin-bottom: 1.5rem; }
-  .overall-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
-  .overall-row span { font-size: 13px; color: var(--text-2); }
-  .overall-row strong { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; }
-  .bar-track { height: 8px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 99px; background: var(--green); transition: width 0.4s cubic-bezier(.4,0,.2,1); }
+  .group { margin-bottom:1.5rem; }
+  .section-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .section-tag { font-size:11px; font-weight:600; letter-spacing:0.08em; padding:3px 9px; border-radius:99px; }
+  .section-tag.trk { background:var(--green-bg); color:var(--green); }
+  .section-tag.tms { background:var(--blue-bg); color:var(--blue); }
+  .section-line { flex:1; height:1px; background:var(--border); }
+  .flows-list { display:flex; flex-direction:column; gap:6px; }
 
-  .group { margin-bottom: 1.5rem; }
-  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-  .section-tag { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; padding: 3px 9px; border-radius: 99px; }
-  .section-tag.trk { background: var(--green-bg); color: var(--green); }
-  .section-tag.tms { background: var(--blue-bg); color: var(--blue); }
-  .section-line { flex: 1; height: 1px; background: var(--border); }
-  .flows-list { display: flex; flex-direction: column; gap: 6px; }
-
-  .flow-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.15s; }
-  .flow-card:hover { border-color: var(--border-strong); }
-  .flow-row { padding: 10px 14px; display: flex; align-items: center; gap: 10px; }
+  .flow-card { background:var(--surface); border:1px solid var(--border); border-radius:10px; overflow:hidden; transition:border-color 0.15s; }
+  .flow-card:hover { border-color:var(--border-strong); }
+  .flow-row { padding:10px 14px; display:flex; align-items:center; gap:10px; }
 
   .flow-num-link {
-    font-family: 'DM Mono', monospace; font-size: 11px;
-    color: var(--text-3); min-width: 24px; text-align: center; flex-shrink: 0;
-    text-decoration: none; width: 24px; height: 24px; border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid transparent; transition: all 0.15s; position: relative;
+    font-family:'DM Mono',monospace; font-size:11px; color:var(--text-3);
+    min-width:24px; text-align:center; flex-shrink:0; text-decoration:none;
+    width:24px; height:24px; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    border:1px solid transparent; transition:all 0.15s; position:relative;
   }
-  .flow-num-link[href]:hover {
-    background: var(--orange-bg); color: var(--orange);
-    border-color: #e8c070; transform: scale(1.1);
-  }
+  .flow-num-link[href]:hover { background:var(--orange-bg); color:var(--orange); border-color:#e8c070; transform:scale(1.1); }
   .flow-num-link[href]:hover::after {
-    content: "Abrir no N8N";
-    position: absolute; left: 30px; top: 50%; transform: translateY(-50%);
-    background: #1a1916; color: #fff; font-size: 10px; font-weight: 500;
-    padding: 3px 8px; border-radius: 5px; white-space: nowrap;
-    pointer-events: none; font-family: 'DM Sans', sans-serif; z-index: 10;
+    content:"Abrir no N8N"; position:absolute; left:30px; top:50%; transform:translateY(-50%);
+    background:#1a1916; color:#fff; font-size:10px; font-weight:500;
+    padding:3px 8px; border-radius:5px; white-space:nowrap;
+    pointer-events:none; font-family:'DM Sans',sans-serif; z-index:10;
   }
-  .flow-num-link:not([href]) { cursor: default; }
+  .flow-num-link:not([href]) { cursor:default; }
 
   .flow-name-input {
-    flex: 1; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
-    color: var(--text); border: none; background: transparent;
-    padding: 3px 6px; border-radius: 5px; min-width: 0; cursor: pointer; transition: background 0.12s;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 320px;
+    flex:1; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500;
+    color:var(--text); border:none; background:transparent;
+    padding:3px 6px; border-radius:5px; min-width:0; cursor:pointer; transition:background 0.12s;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:320px;
   }
-  .flow-name-input:hover { background: var(--surface2); }
-  .flow-name-input:focus { outline: 2px solid #1558a844; background: #fff; cursor: text; max-width: 100%; }
+  .flow-name-input:hover { background:var(--surface2); }
+  .flow-name-input:focus { outline:2px solid #1558a844; background:#fff; cursor:text; max-width:100%; }
 
-  .mini-bar-wrap { width: 72px; height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; flex-shrink: 0; }
-  .mini-bar { height: 100%; border-radius: 99px; transition: width 0.3s, background 0.3s; }
+  .mini-bar-wrap { width:72px; height:6px; background:var(--surface2); border-radius:99px; overflow:hidden; flex-shrink:0; }
+  .mini-bar { height:100%; border-radius:99px; transition:width 0.3s,background 0.3s; }
 
-  input[type=range] {
-    -webkit-appearance: none; width: 72px; height: 4px;
-    border-radius: 99px; background: var(--surface2); outline: none; cursor: pointer; flex-shrink: 0;
+  input[type=range] { -webkit-appearance:none; width:72px; height:4px; border-radius:99px; background:var(--surface2); outline:none; cursor:pointer; flex-shrink:0; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance:none; width:14px; height:14px; border-radius:50%; background:var(--text); cursor:pointer; border:2px solid var(--surface); box-shadow:0 1px 3px rgba(0,0,0,0.2); transition:background 0.15s; }
+  input[type=range]:hover::-webkit-slider-thumb { background:var(--blue); }
+
+  .pct-field { display:flex; align-items:center; gap:3px; flex-shrink:0; }
+  .pct-input { width:50px; font-family:'DM Mono',monospace; font-size:13px; font-weight:500; text-align:right; border:1px solid var(--border); border-radius:6px; padding:4px 6px; background:var(--surface2); color:var(--text); transition:border-color 0.12s; -moz-appearance:textfield; }
+  .pct-input::-webkit-inner-spin-button, .pct-input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  .pct-input:focus { outline:none; border-color:var(--blue); background:#fff; }
+  .pct-sym { font-size:13px; color:var(--text-3); font-family:'DM Mono',monospace; }
+
+  .status-pill { font-size:11px; font-weight:500; padding:3px 9px; border-radius:99px; min-width:70px; text-align:center; flex-shrink:0; }
+  .pill-done { background:var(--green-bg); color:var(--green); }
+  .pill-prog { background:var(--blue-bg); color:var(--blue); }
+  .pill-todo { background:#f0efe9; color:var(--text-3); }
+
+  .btn-row { display:flex; gap:6px; flex-shrink:0; }
+
+  .notes-btn, .subtasks-btn {
+    display:flex; align-items:center; gap:5px;
+    font-size:12px; font-weight:500; color:var(--text-3);
+    background:none; border:1px solid var(--border); cursor:pointer;
+    padding:4px 10px; border-radius:6px;
+    transition:background 0.12s,color 0.12s,border-color 0.12s;
+    flex-shrink:0; font-family:'DM Sans',sans-serif;
   }
-  input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%;
-    background: var(--text); cursor: pointer; border: 2px solid var(--surface);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2); transition: background 0.15s;
+  .notes-btn:hover { background:var(--surface2); color:var(--text-2); border-color:var(--border-strong); }
+  .notes-btn.has-notes { color:var(--purple); border-color:#c4b8f5; background:var(--purple-bg); }
+  .notes-btn svg, .subtasks-btn svg { width:13px; height:13px; transition:transform 0.2s; flex-shrink:0; }
+  .notes-btn.open svg.chevron, .subtasks-btn.open svg.chevron { transform:rotate(180deg); }
+
+  .subtasks-btn:hover { background:var(--orange-bg); color:var(--orange); border-color:#e8c070; }
+  .subtasks-btn.open { color:var(--orange); border-color:#e8c070; background:var(--orange-bg); }
+
+  .notes-panel { display:none; border-top:1px solid var(--border); padding:16px 18px 18px; background:#fafaf8; }
+  .notes-panel.open { display:block; animation:slideDown 0.18s ease; }
+  @keyframes slideDown { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
+
+  .notes-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px; }
+  @media (max-width:600px) { .notes-grid { grid-template-columns:1fr; } }
+  .notes-field label { display:block; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:5px; }
+  .notes-field input[type=number] { width:100%; font-family:'DM Mono',monospace; font-size:15px; padding:8px 10px; border:1px solid var(--border); border-radius:7px; background:var(--surface); color:var(--text); -moz-appearance:textfield; transition:border-color 0.12s; }
+  .notes-field input[type=number]::-webkit-inner-spin-button { -webkit-appearance:none; }
+  .notes-field input[type=number]:focus { outline:none; border-color:var(--blue); }
+  .notes-tags-section { margin-bottom:14px; }
+  .notes-tags-section label { display:block; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:7px; }
+  .tags-row { display:flex; flex-wrap:wrap; gap:6px; }
+  .tag-chip { font-size:12px; font-weight:500; padding:4px 11px; border-radius:99px; border:1px solid var(--border); background:var(--surface); color:var(--text-2); cursor:pointer; transition:all 0.12s; user-select:none; }
+  .tag-chip:hover { border-color:var(--border-strong); color:var(--text); }
+  .tag-chip.active { background:var(--purple-bg); color:var(--purple); border-color:#c4b8f5; }
+  .notes-obs-section label { display:block; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:5px; }
+  .notes-textarea { width:100%; font-family:'DM Sans',sans-serif; font-size:13px; padding:9px 11px; border:1px solid var(--border); border-radius:7px; background:var(--surface); color:var(--text); resize:vertical; min-height:76px; line-height:1.6; transition:border-color 0.12s; }
+  .notes-textarea:focus { outline:none; border-color:var(--blue); }
+  .notes-textarea::placeholder { color:var(--text-3); }
+  .notes-bottom { display:flex; align-items:center; justify-content:flex-end; margin-top:10px; height:18px; }
+  .notes-saved-hint { font-size:11px; color:var(--green); opacity:0; transition:opacity 0.3s; display:flex; align-items:center; gap:4px; }
+  .notes-saved-hint.show { opacity:1; }
+
+  /* ── Subtasks panel ── */
+  .subtasks-panel { display:none; border-top:1px solid var(--border); background:#fffdf8; padding-bottom:12px; }
+  .subtasks-panel.open { display:block; animation:slideDown 0.18s ease; }
+  .subtasks-header { padding:12px 18px 8px; font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); display:flex; align-items:center; gap:8px; }
+  .subtasks-header-line { flex:1; height:1px; background:var(--border); }
+
+  .subtask-card { margin:0 14px 8px; border:1px solid var(--border); border-radius:9px; background:var(--surface); overflow:hidden; transition:border-color 0.15s; }
+  .subtask-card:hover { border-color:var(--border-strong); }
+  .subtask-main { display:flex; align-items:center; gap:9px; padding:9px 12px; }
+  .subtask-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; transition:background 0.3s; }
+
+  .subtask-name {
+    flex:1; font-size:13px; font-weight:500; color:var(--text);
+    border:none; background:transparent; font-family:'DM Sans',sans-serif;
+    padding:2px 5px; border-radius:4px; min-width:0; cursor:pointer;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:260px;
+    transition:background 0.12s;
   }
-  input[type=range]:hover::-webkit-slider-thumb { background: var(--blue); }
+  .subtask-name:hover { background:var(--surface2); }
+  .subtask-name:focus { outline:2px solid #1558a844; background:#fff; cursor:text; max-width:100%; }
 
-  .pct-field { display: flex; align-items: center; gap: 3px; flex-shrink: 0; }
-  .pct-input {
-    width: 50px; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500;
-    text-align: right; border: 1px solid var(--border); border-radius: 6px;
-    padding: 4px 6px; background: var(--surface2); color: var(--text);
-    transition: border-color 0.12s; -moz-appearance: textfield;
+  .subtask-mini-bar-wrap { width:56px; height:5px; background:var(--surface2); border-radius:99px; overflow:hidden; flex-shrink:0; }
+  .subtask-mini-bar { height:100%; border-radius:99px; transition:width 0.3s,background 0.3s; }
+
+  .subtask-pct-field { display:flex; align-items:center; gap:3px; flex-shrink:0; }
+  .subtask-pct-input { width:44px; font-family:'DM Mono',monospace; font-size:12px; font-weight:500; text-align:right; border:1px solid var(--border); border-radius:5px; padding:3px 5px; background:var(--surface2); color:var(--text); -moz-appearance:textfield; transition:border-color 0.12s; }
+  .subtask-pct-input::-webkit-inner-spin-button { -webkit-appearance:none; }
+  .subtask-pct-input:focus { outline:none; border-color:var(--blue); background:#fff; }
+  .subtask-pct-sym { font-size:12px; color:var(--text-3); font-family:'DM Mono',monospace; }
+
+  .subtask-notes-btn {
+    display:flex; align-items:center; gap:4px;
+    font-size:11px; font-weight:500; color:var(--text-3);
+    background:none; border:1px solid var(--border); cursor:pointer;
+    padding:3px 8px; border-radius:5px; transition:all 0.12s;
+    flex-shrink:0; font-family:'DM Sans',sans-serif;
   }
-  .pct-input::-webkit-inner-spin-button, .pct-input::-webkit-outer-spin-button { -webkit-appearance: none; }
-  .pct-input:focus { outline: none; border-color: var(--blue); background: #fff; }
-  .pct-sym { font-size: 13px; color: var(--text-3); font-family: 'DM Mono', monospace; }
+  .subtask-notes-btn:hover { background:var(--surface2); color:var(--text-2); }
+  .subtask-notes-btn.has-notes { color:var(--purple); border-color:#c4b8f5; background:var(--purple-bg); }
+  .subtask-notes-btn svg { width:11px; height:11px; transition:transform 0.2s; }
+  .subtask-notes-btn.open svg.chevron { transform:rotate(180deg); }
 
-  .status-pill { font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 99px; min-width: 70px; text-align: center; flex-shrink: 0; }
-  .pill-done { background: var(--green-bg); color: var(--green); }
-  .pill-prog { background: var(--blue-bg); color: var(--blue); }
-  .pill-todo { background: #f0efe9; color: var(--text-3); }
+  .subtask-notes-panel { display:none; border-top:1px solid var(--border); padding:12px 14px; background:#fafaf8; }
+  .subtask-notes-panel.open { display:block; animation:slideDown 0.15s ease; }
+  .subtask-notes-label { font-size:11px; font-weight:500; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-3); margin-bottom:5px; display:block; }
+  .subtask-notes-textarea { width:100%; font-family:'DM Sans',sans-serif; font-size:13px; padding:8px 10px; border:1px solid var(--border); border-radius:6px; background:var(--surface); color:var(--text); resize:vertical; min-height:60px; line-height:1.6; transition:border-color 0.12s; }
+  .subtask-notes-textarea:focus { outline:none; border-color:var(--blue); }
+  .subtask-notes-textarea::placeholder { color:var(--text-3); }
+  .subtask-saved { font-size:11px; color:var(--green); opacity:0; transition:opacity 0.3s; display:flex; align-items:center; justify-content:flex-end; gap:4px; margin-top:8px; }
+  .subtask-saved.show { opacity:1; }
 
-  .notes-btn {
-    display: flex; align-items: center; gap: 5px;
-    font-size: 12px; font-weight: 500; color: var(--text-3);
-    background: none; border: 1px solid var(--border); cursor: pointer;
-    padding: 4px 10px; border-radius: 6px;
-    transition: background 0.12s, color 0.12s, border-color 0.12s;
-    flex-shrink: 0; font-family: 'DM Sans', sans-serif;
-  }
-  .notes-btn:hover { background: var(--surface2); color: var(--text-2); border-color: var(--border-strong); }
-  .notes-btn.has-notes { color: var(--purple); border-color: #c4b8f5; background: var(--purple-bg); }
-  .notes-btn svg { width: 13px; height: 13px; transition: transform 0.2s; flex-shrink: 0; }
-  .notes-btn.open svg.chevron { transform: rotate(180deg); }
-
-  .notes-panel { display: none; border-top: 1px solid var(--border); padding: 16px 18px 18px; background: #fafaf8; }
-  .notes-panel.open { display: block; animation: slideDown 0.18s ease; }
-  @keyframes slideDown { from { opacity:0; transform:translateY(-4px); } to { opacity:1; transform:translateY(0); } }
-
-  .notes-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
-  @media (max-width: 600px) { .notes-grid { grid-template-columns: 1fr; } }
-
-  .notes-field label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 5px; }
-  .notes-field input[type=number] {
-    width: 100%; font-family: 'DM Mono', monospace; font-size: 15px;
-    padding: 8px 10px; border: 1px solid var(--border); border-radius: 7px;
-    background: var(--surface); color: var(--text); -moz-appearance: textfield; transition: border-color 0.12s;
-  }
-  .notes-field input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; }
-  .notes-field input[type=number]:focus { outline: none; border-color: var(--blue); }
-
-  .notes-tags-section { margin-bottom: 14px; }
-  .notes-tags-section label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 7px; }
-  .tags-row { display: flex; flex-wrap: wrap; gap: 6px; }
-
-  .tag-chip {
-    font-size: 12px; font-weight: 500; padding: 4px 11px; border-radius: 99px;
-    border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
-    cursor: pointer; transition: all 0.12s; user-select: none;
-  }
-  .tag-chip:hover { border-color: var(--border-strong); color: var(--text); }
-  .tag-chip.active { background: var(--purple-bg); color: var(--purple); border-color: #c4b8f5; }
-
-  .notes-obs-section label { display: block; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 5px; }
-  .notes-textarea {
-    width: 100%; font-family: 'DM Sans', sans-serif; font-size: 13px;
-    padding: 9px 11px; border: 1px solid var(--border); border-radius: 7px;
-    background: var(--surface); color: var(--text);
-    resize: vertical; min-height: 76px; line-height: 1.6; transition: border-color 0.12s;
-  }
-  .notes-textarea:focus { outline: none; border-color: var(--blue); }
-  .notes-textarea::placeholder { color: var(--text-3); }
-
-  .notes-bottom { display: flex; align-items: center; justify-content: flex-end; margin-top: 10px; height: 18px; }
-  .notes-saved-hint { font-size: 11px; color: var(--green); opacity: 0; transition: opacity 0.3s; display: flex; align-items: center; gap: 4px; }
-  .notes-saved-hint.show { opacity: 1; }
-
-  footer { margin-top: 2rem; font-size: 12px; color: var(--text-3); text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
-  footer svg { width: 14px; height: 14px; opacity: 0.5; }
+  footer { margin-top:2rem; font-size:12px; color:var(--text-3); text-align:center; display:flex; align-items:center; justify-content:center; gap:6px; }
+  footer svg { width:14px; height:14px; opacity:0.5; }
 </style>
 </head>
 <body>
@@ -233,7 +221,6 @@
 </div>
 
 <div class="container">
-
   <div class="sync-bar">
     <div class="sync-dot" id="sync-dot"></div>
     <span class="sync-label" id="sync-label">Conectando…</span>
@@ -249,7 +236,7 @@
       </div>
       <h1>Migração · Laisa Flow</h1>
     </div>
-    <p class="subtitle">Clique no <strong style="font-weight:500">número</strong> para abrir no N8N · <strong style="font-weight:500">✎ Notas</strong> para registrar MCPs e mudanças · sincronizado em tempo real</p>
+    <p class="subtitle">Clique no <strong style="font-weight:500">número</strong> para abrir no N8N · <strong style="font-weight:500">✎ Notas</strong> para MCPs e mudanças · sincronizado em tempo real</p>
   </header>
 
   <div class="summary-grid">
@@ -273,18 +260,17 @@
 
   <footer>
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
-    Sincronizado com Supabase · qualquer alteração aparece para todos · adicione novos flows direto na tabela
+    Sincronizado com Supabase · adicione flows e subtasks direto na tabela
   </footer>
-
 </div>
 
 <script>
 const SUPABASE_URL = 'https://ynxcuxkwfwcsgtltaixo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlueGN1eGt3Zndjc2d0bHRhaXhvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNjc0OTEsImV4cCI6MjA5Mzc0MzQ5MX0.ZJkwP8v96sfuJc0dQBVGLC3hzM5T96W4Goav2tOggU4';
-const TABLE = 'flows';
 const CHANGE_TAGS = ["Novo MCP","MCP existente","Webhook novo","Lógica alterada","Integração nova","Sem mudanças"];
 
 let data = [];
+let subtasksData = {}; // keyed by flow_index
 
 function setSyncStatus(state, text) {
   document.getElementById('sync-dot').className = 'sync-dot ' + state;
@@ -308,50 +294,79 @@ async function sbFetch(path, options = {}) {
 }
 
 async function loadFromSupabase() {
-  const rows = await sbFetch(`${TABLE}?order=flow_index.asc`);
+  const [rows, stRows] = await Promise.all([
+    sbFetch('flows?order=flow_index.asc'),
+    sbFetch('subtasks?order=flow_index.asc,position.asc').catch(() => [])
+  ]);
+
   if (!rows || rows.length === 0) throw new Error('Tabela vazia');
+
   data = rows.map(row => ({
-    id:            row.id,
-    flow_index:    row.flow_index,
-    tag:           row.tag || 'TMS',
-    name:          row.name || '',
-    url:           row.url  || '',
-    pct:           row.pct  || 0,
+    id:         row.id,
+    flow_index: row.flow_index,
+    tag:        row.tag || 'TMS',
+    name:       row.name || '',
+    url:        row.url  || '',
+    pct:        row.pct  || 0,
     notes: {
       mcps_new:      row.mcps_new      || '',
       mcps_existing: row.mcps_existing || '',
       changes:       row.changes       || '',
-      tags:          row.tags ? (typeof row.tags === 'string' ? JSON.parse(row.tags) : row.tags) : []
+      tags:          row.tags ? (typeof row.tags==='string' ? JSON.parse(row.tags) : row.tags) : []
     }
   }));
+
+  subtasksData = {};
+  if (stRows) {
+    stRows.forEach(st => {
+      if (!subtasksData[st.flow_index]) subtasksData[st.flow_index] = [];
+      subtasksData[st.flow_index].push({
+        id:       st.id,
+        position: st.position,
+        name:     st.name || '',
+        notes:    st.notes || '',
+        pct:      st.pct  || 0
+      });
+    });
+  }
 }
 
 const saveTimers = {};
 async function saveFlow(i) {
-  clearTimeout(saveTimers[i]);
-  saveTimers[i] = setTimeout(async () => {
+  clearTimeout(saveTimers['f'+i]);
+  saveTimers['f'+i] = setTimeout(async () => {
     setSyncStatus('syncing', 'Salvando…');
     try {
       const f = data[i];
-      await sbFetch(`${TABLE}?flow_index=eq.${f.flow_index}`, {
-        method: 'PATCH',
-        prefer: 'return=minimal',
+      await sbFetch(`flows?flow_index=eq.${f.flow_index}`, {
+        method: 'PATCH', prefer: 'return=minimal',
         body: JSON.stringify({
-          name:          f.name,
-          pct:           f.pct,
-          url:           f.url,
-          mcps_new:      f.notes.mcps_new,
-          mcps_existing: f.notes.mcps_existing,
-          changes:       f.notes.changes,
-          tags:          JSON.stringify(f.notes.tags)
+          name: f.name, pct: f.pct, url: f.url,
+          mcps_new: f.notes.mcps_new, mcps_existing: f.notes.mcps_existing,
+          changes: f.notes.changes, tags: JSON.stringify(f.notes.tags)
         })
       });
-      setSyncStatus('synced', 'Salvo · ' + new Date().toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}));
+      setSyncStatus('synced', 'Salvo · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
       showSaved(i);
-    } catch(e) {
-      setSyncStatus('error', 'Erro ao salvar');
-      console.error(e);
-    }
+    } catch(e) { setSyncStatus('error','Erro ao salvar'); console.error(e); }
+  }, 600);
+}
+
+async function saveSubtask(flowIdx, pos) {
+  const key = `st_${flowIdx}_${pos}`;
+  clearTimeout(saveTimers[key]);
+  saveTimers[key] = setTimeout(async () => {
+    setSyncStatus('syncing','Salvando…');
+    try {
+      const st = subtasksData[flowIdx][pos];
+      await sbFetch(`subtasks?flow_index=eq.${flowIdx}&position=eq.${pos}`, {
+        method: 'PATCH', prefer: 'return=minimal',
+        body: JSON.stringify({ name: st.name, notes: st.notes, pct: st.pct })
+      });
+      setSyncStatus('synced', 'Salvo · ' + new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}));
+      const el = document.getElementById(`st-saved-${flowIdx}-${pos}`);
+      if (el) { el.classList.add('show'); clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'),1500); }
+    } catch(e) { setSyncStatus('error','Erro ao salvar'); console.error(e); }
   }, 600);
 }
 
@@ -367,31 +382,73 @@ function pillHTML(p) {
   return `<span class="status-pill pill-todo">Não iniciado</span>`;
 }
 function hasNotes(f) {
-  return !!(f.notes.mcps_new || f.notes.mcps_existing || f.notes.changes || f.notes.tags.length);
+  return !!(f.notes.mcps_new||f.notes.mcps_existing||f.notes.changes||f.notes.tags.length);
 }
 function notesLabel(i) {
   const f = data[i];
   const c = (f.notes.mcps_new?1:0)+(f.notes.mcps_existing?1:0)+(f.notes.changes?1:0)+f.notes.tags.length;
-  return c > 0
+  return c>0
     ? `✎ Notas <span style="background:var(--purple-bg);color:var(--purple);font-size:10px;padding:1px 6px;border-radius:99px;margin-left:2px">${c}</span>`
     : `✎ Notas`;
 }
 function showSaved(i) {
   const el = document.getElementById(`saved-${i}`);
   if (!el) return;
-  el.classList.add('show');
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.classList.remove('show'), 1500);
+  el.classList.add('show'); clearTimeout(el._t);
+  el._t = setTimeout(()=>el.classList.remove('show'),1500);
 }
 function updateSummary() {
   const total = data.length;
-  const avg   = total ? data.reduce((a,f) => a+f.pct, 0) / total : 0;
+  const avg = total ? data.reduce((a,f)=>a+f.pct,0)/total : 0;
   document.getElementById('overall-pct').textContent = Math.round(avg)+'%';
   document.getElementById('overall-bar').style.width = Math.round(avg)+'%';
   document.getElementById('m-total').textContent = total;
   document.getElementById('m-done').textContent  = data.filter(f=>f.pct===100).length;
   document.getElementById('m-prog').textContent  = data.filter(f=>f.pct>0&&f.pct<100).length;
   document.getElementById('m-todo').textContent  = data.filter(f=>f.pct===0).length;
+}
+
+function buildSubtasksPanel(flowIdx, dataIdx) {
+  const sts = subtasksData[flowIdx];
+  if (!sts || sts.length === 0) return '';
+
+  const rows = sts.map((st, pos) => `
+    <div class="subtask-card">
+      <div class="subtask-main">
+        <div class="subtask-dot" id="st-dot-${flowIdx}-${pos}" style="background:${barColor(st.pct)}"></div>
+        <input class="subtask-name" type="text" value="${st.name.replace(/"/g,'&quot;')}" data-fi="${flowIdx}" data-pos="${pos}" />
+        <div class="subtask-mini-bar-wrap">
+          <div class="subtask-mini-bar" id="st-bar-${flowIdx}-${pos}" style="width:${st.pct}%;background:${barColor(st.pct)}"></div>
+        </div>
+        <div class="subtask-pct-field">
+          <input class="subtask-pct-input" type="number" min="0" max="100" step="1" value="${st.pct}" data-fi="${flowIdx}" data-pos="${pos}" />
+          <span class="subtask-pct-sym">%</span>
+        </div>
+        <button class="subtask-notes-btn${st.notes?' has-notes':''}" id="st-nbtn-${flowIdx}-${pos}" data-fi="${flowIdx}" data-pos="${pos}">
+          ✎
+          <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+        </button>
+      </div>
+      <div class="subtask-notes-panel" id="st-npanel-${flowIdx}-${pos}">
+        <label class="subtask-notes-label">Descrição / observações</label>
+        <textarea class="subtask-notes-textarea" data-fi="${flowIdx}" data-pos="${pos}" placeholder="O que essa task faz, dependências, pendências…">${st.notes}</textarea>
+        <div class="subtask-saved" id="st-saved-${flowIdx}-${pos}">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          Salvo
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="subtasks-panel" id="stpanel-${dataIdx}">
+      <div class="subtasks-header">
+        <span>Sub-tasks</span>
+        <div class="subtasks-header-line"></div>
+      </div>
+      ${rows}
+    </div>
+  `;
 }
 
 function render() {
@@ -414,8 +471,10 @@ function render() {
     const list = document.getElementById(`group-${tag}`);
 
     groupFlows.forEach(f => {
-      const i  = f.idx;
-      const n  = f.notes;
+      const i = f.idx;
+      const n = f.notes;
+      const hasSubtasks = !!(subtasksData[f.flow_index] && subtasksData[f.flow_index].length);
+
       const numEl = f.url
         ? `<a class="flow-num-link" href="${f.url}" target="_blank" title="Abrir no N8N">${f.flow_index+1}</a>`
         : `<span class="flow-num-link">${f.flow_index+1}</span>`;
@@ -423,6 +482,13 @@ function render() {
       const tagsHTML = CHANGE_TAGS.map(t =>
         `<span class="tag-chip${n.tags.includes(t)?' active':''}" data-i="${i}" data-tag="${t}">${t}</span>`
       ).join('');
+
+      const subtasksBtnHTML = hasSubtasks
+        ? `<button class="subtasks-btn" id="stbtn-${i}" data-i="${i}">
+            ⬡ Sub-tasks
+            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+           </button>`
+        : '';
 
       const card = document.createElement('div');
       card.className = 'flow-card';
@@ -439,11 +505,15 @@ function render() {
             <span class="pct-sym">%</span>
           </div>
           <div id="pill-${i}">${pillHTML(f.pct)}</div>
-          <button class="notes-btn${hasNotes(f)?' has-notes':''}" id="nbtn-${i}" data-i="${i}">
-            <span id="nlabel-${i}">${notesLabel(i)}</span>
-            <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
-          </button>
+          <div class="btn-row">
+            ${subtasksBtnHTML}
+            <button class="notes-btn${hasNotes(f)?' has-notes':''}" id="nbtn-${i}" data-i="${i}">
+              <span id="nlabel-${i}">${notesLabel(i)}</span>
+              <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+          </div>
         </div>
+        ${buildSubtasksPanel(f.flow_index, i)}
         <div class="notes-panel" id="npanel-${i}">
           <div class="notes-grid">
             <div class="notes-field">
@@ -472,16 +542,12 @@ function render() {
         </div>
       `;
       list.appendChild(card);
-
     });
   });
 
+  // ── Flow events ──
   document.querySelectorAll('.flow-name-input').forEach(inp => {
-    inp.addEventListener('change', e => {
-      const i = +e.target.dataset.i;
-      data[i].name = e.target.value;
-      saveFlow(i);
-    });
+    inp.addEventListener('change', e => { const i=+e.target.dataset.i; data[i].name=e.target.value; saveFlow(i); });
   });
 
   function updateFlow(i, v) {
@@ -504,6 +570,16 @@ function render() {
     inp.addEventListener('input', e => updateFlow(+e.target.dataset.i, parseInt(e.target.value)));
   });
 
+  document.querySelectorAll('.subtasks-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const i = +btn.dataset.i;
+      const panel = document.getElementById(`stpanel-${i}`);
+      if (!panel) return;
+      const open = panel.classList.toggle('open');
+      btn.classList.toggle('open', open);
+    });
+  });
+
   document.querySelectorAll('.notes-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       const i = +btn.dataset.i;
@@ -515,29 +591,64 @@ function render() {
 
   document.querySelectorAll('.notes-num').forEach(inp => {
     inp.addEventListener('input', e => {
-      const i = +e.target.dataset.i;
-      data[i].notes[e.target.dataset.field] = e.target.value;
+      const i=+e.target.dataset.i; data[i].notes[e.target.dataset.field]=e.target.value;
       refreshNotesBtn(i); saveFlow(i);
     });
   });
-
   document.querySelectorAll('.notes-textarea').forEach(ta => {
     ta.addEventListener('input', e => {
-      const i = +e.target.dataset.i;
-      data[i].notes.changes = e.target.value;
+      const i=+e.target.dataset.i; data[i].notes.changes=e.target.value;
+      refreshNotesBtn(i); saveFlow(i);
+    });
+  });
+  document.querySelectorAll('.tag-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const i=+chip.dataset.i; const t=chip.dataset.tag;
+      const tags=data[i].notes.tags; const idx=tags.indexOf(t);
+      if(idx>-1) tags.splice(idx,1); else tags.push(t);
+      chip.classList.toggle('active', tags.includes(t));
       refreshNotesBtn(i); saveFlow(i);
     });
   });
 
-  document.querySelectorAll('.tag-chip').forEach(chip => {
-    chip.addEventListener('click', () => {
-      const i = +chip.dataset.i;
-      const t = chip.dataset.tag;
-      const tags = data[i].notes.tags;
-      const idx = tags.indexOf(t);
-      if (idx>-1) tags.splice(idx,1); else tags.push(t);
-      chip.classList.toggle('active', tags.includes(t));
-      refreshNotesBtn(i); saveFlow(i);
+  // ── Subtask events ──
+  document.querySelectorAll('.subtask-name').forEach(inp => {
+    inp.addEventListener('change', e => {
+      const fi=+e.target.dataset.fi, pos=+e.target.dataset.pos;
+      subtasksData[fi][pos].name = e.target.value;
+      saveSubtask(fi, pos);
+    });
+  });
+
+  document.querySelectorAll('.subtask-pct-input').forEach(inp => {
+    inp.addEventListener('input', e => {
+      const fi=+e.target.dataset.fi, pos=+e.target.dataset.pos;
+      const v = Math.max(0, Math.min(100, parseInt(e.target.value)||0));
+      subtasksData[fi][pos].pct = v;
+      const bar = document.getElementById(`st-bar-${fi}-${pos}`);
+      const dot = document.getElementById(`st-dot-${fi}-${pos}`);
+      if (bar) { bar.style.width=v+'%'; bar.style.background=barColor(v); }
+      if (dot) dot.style.background = barColor(v);
+      saveSubtask(fi, pos);
+    });
+  });
+
+  document.querySelectorAll('.subtask-notes-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fi=+btn.dataset.fi, pos=+btn.dataset.pos;
+      const panel = document.getElementById(`st-npanel-${fi}-${pos}`);
+      const open = panel.classList.toggle('open');
+      btn.classList.toggle('open', open);
+    });
+  });
+
+  document.querySelectorAll('.subtask-notes-textarea').forEach(ta => {
+    ta.addEventListener('input', e => {
+      const fi=+e.target.dataset.fi, pos=+e.target.dataset.pos;
+      subtasksData[fi][pos].notes = e.target.value;
+      const btn = document.getElementById(`st-nbtn-${fi}-${pos}`);
+      if (btn) btn.classList.toggle('has-notes', !!e.target.value);
+      saveSubtask(fi, pos);
     });
   });
 
@@ -545,20 +656,20 @@ function render() {
 }
 
 function refreshNotesBtn(i) {
-  const btn = document.getElementById(`nbtn-${i}`);
-  const lbl = document.getElementById(`nlabel-${i}`);
-  if (!btn||!lbl) return;
+  const btn=document.getElementById(`nbtn-${i}`);
+  const lbl=document.getElementById(`nlabel-${i}`);
+  if(!btn||!lbl) return;
   btn.classList.toggle('has-notes', hasNotes(data[i]));
   lbl.innerHTML = notesLabel(i);
 }
 
 (async () => {
   try {
-    setSyncStatus('syncing', 'Carregando…');
+    setSyncStatus('syncing','Carregando…');
     await loadFromSupabase();
-    setSyncStatus('synced', 'Sincronizado');
+    setSyncStatus('synced','Sincronizado');
   } catch(e) {
-    setSyncStatus('error', 'Erro de conexão');
+    setSyncStatus('error','Erro de conexão');
     console.error(e);
   }
   render();
